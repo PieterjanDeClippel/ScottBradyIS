@@ -19,7 +19,7 @@ namespace Client
                 .AddCookie("cookie")
                 .AddOpenIdConnect("oidc", options =>
                 {
-                    options.Authority = "https://localhost:5000";
+                    options.Authority = "https://localhost:44390";
                     options.ClientId = "oidcClient";
                     options.ClientSecret = "SuperSecretPassword";
 

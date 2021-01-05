@@ -35,13 +35,15 @@ namespace IdentityServerHost.Quickstart.UI
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IPasswordHasher<IdentityUser> passwordHasher;
 
         public AccountController(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            IPasswordHasher<IdentityUser> passwordHasher)
         {
             _interaction = interaction;
             _clientStore = clientStore;
@@ -49,6 +51,7 @@ namespace IdentityServerHost.Quickstart.UI
             _events = events;
 
             _signInManager = signInManager;
+            this.passwordHasher = passwordHasher;
         }
 
         /// <summary>
@@ -110,8 +113,11 @@ namespace IdentityServerHost.Quickstart.UI
             {
                 var user = await _signInManager.UserManager.FindByNameAsync(model.Username);
 
+                var hash = passwordHasher.HashPassword(user, "password");
+
                 // validate username/password against in-memory store
-                if (user != null && (await _signInManager.CheckPasswordSignInAsync(user, model.Password, true)) == SignInResult.Success)
+                SignInResult signInResult = (await _signInManager.CheckPasswordSignInAsync(user, model.Password, true));
+                if (user != null && signInResult == SignInResult.Success)
                 {
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
 
